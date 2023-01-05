@@ -36,40 +36,47 @@ namespace cc
 
         public void Trace()
         {
-            string host = textBox1.Text;
-            int maxHops = 30;
-
-            listBox1.Items.Add($"Tracing route to {host} with a maximum of {maxHops} hops:");
-
-            Ping pingSender = new Ping();
-            PingOptions options = new PingOptions(1, true);
-            options.DontFragment = true;
-
-            string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-            byte[] buffer = System.Text.Encoding.ASCII.GetBytes(data);
-            int timeout = 120;
-            int ttl = 1;
-            IPAddress address = Dns.GetHostEntry(host).AddressList[0];
-
-            while (ttl <= maxHops)
+            string host;
+            if (textBox1.Text != string.Empty)
             {
-                PingReply reply = pingSender.Send(address, timeout, buffer, options);
+                host = textBox1.Text;
+                int maxHops = 30;
 
-                if (reply.Status == IPStatus.Success)
+                listBox1.Items.Add($"Tracing route to {host} with a maximum of {maxHops} hops:");
+
+                Ping pingSender = new Ping();
+                PingOptions options = new PingOptions(1, true);
+                options.DontFragment = true;
+
+                string data = "";
+                byte[] buffer= { };
+                int timeout = 120;
+                int ttl = 1;
+                IPAddress address = Dns.GetHostEntry(host).AddressList[0];
+
+                while (ttl <= maxHops)
                 {
-                    listBox1.Items.Add($"{ttl}\t{reply.Address.ToString()}");
-                    break;
-                }
-                else
-                {
-                    listBox1.Items.Add($"{ttl}\t{reply.Status.ToString()}");
+                    PingReply reply = pingSender.Send(address, timeout, buffer, options);
+
+                    if (reply.Status == IPStatus.Success)
+                    {  
+                        listBox1.Items.Add($"{ttl}\t{reply.Status.ToString()} from {reply.Address.ToString()}\t{reply.RoundtripTime.ToString()}ms");
+                        break;
+                    }
+                    else
+                    {
+                        listBox1.Items.Add($"{ttl}\t{reply.Status.ToString()} from {reply.Address.ToString()} \t{reply.RoundtripTime.ToString()}ms");
+                    }
+
+                    ttl++;
+                    options.Ttl = ttl;
+                   
                 }
 
-                ttl++;
-                options.Ttl = ttl;
+                listBox1.Items.Add("Trace complete.");
             }
 
-            listBox1.Items.Add("Trace complete.");
+            
         }
     }
 }
